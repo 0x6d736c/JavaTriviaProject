@@ -54,4 +54,4 @@ Collaboration project in Java utilizing a trivia web API to implement a GUI for 
   * Mythology, Geography, History, Politics
 - Random [Any]
 
-//Where the fuck do I put "vehicles"? :|
+//Where do we put vehicles?
