@@ -1,5 +1,7 @@
 import com.google.gson.JsonArray;
 import datamanagement.QueryParser;
+import processor.Processor;
+import ui.CommandLine;
 
 public class Main {
     /**
@@ -7,12 +9,15 @@ public class Main {
      * backend, GUI, etc. to provide a smooth experience.
      */
     public static void main(String[] args) {
-        // Drives the program. Or drives us insane. We'll see.
-
-        //TODO: Move this to the appropriate architectural level later.
-        String query = "https://opentdb.com/api.php?amount=50&difficulty=hard&type=multiple";                         //Contains the primary query, append as necessary
-
-        JsonArray queryResult = QueryParser.parse(query);
-        System.out.println(queryResult);
+//        // Drives the program. Or drives us insane. We'll see.
+//
+//        //TODO: Move this to the appropriate architectural level later.
+//        String query = "https://opentdb.com/api.php?amount=50&difficulty=hard&type=multiple";                         //Contains the primary query, append as necessary
+//
+//        JsonArray queryResult = QueryParser.parse(query);
+//        System.out.println(queryResult);
+        Processor processor = new Processor();
+        CommandLine ui = new CommandLine(processor);
+        ui.start();
     }
 }
