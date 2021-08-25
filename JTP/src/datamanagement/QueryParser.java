@@ -1,8 +1,6 @@
-package Application;
+package datamanagement;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 import java.io.IOException;
 import java.io.InputStream;

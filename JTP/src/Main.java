@@ -1,6 +1,5 @@
-package Application;
-
 import com.google.gson.JsonArray;
+import datamanagement.QueryParser;
 
 public class Main {
     /**
