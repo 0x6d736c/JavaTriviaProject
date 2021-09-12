@@ -3,6 +3,9 @@ import datamanagement.QueryParser;
 import processor.Processor;
 import ui.CommandLine;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Main {
     /**
      * The main class for the Java Trivia Project. Coordinates all of the consituent parts of the program:
@@ -18,6 +21,12 @@ public class Main {
 //        System.out.println(queryResult);
         Processor processor = new Processor();
         CommandLine ui = new CommandLine(processor);
+
+        //Debug
+//        List<String> questions = new ArrayList<String>();
+//        questions.add("https://opentdb.com/api.php?amount=50&difficulty=hard&type=multiple");
+//        processor.buildQuestions(questions);
+//        System.out.println(QueryParser.parse("https://opentdb.com/api.php?amount=50&difficulty=hard&type=multiple").get(0));
         ui.start();
     }
 }

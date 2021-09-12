@@ -14,6 +14,11 @@ import java.net.URLConnection;
  * every entry in the JsonArray is going to be question/answer pair with category and difficulty assigned.
  */
 public class QueryParser {
+    /**
+     * Takes a single query String and returns an array of all the questions retrieved from the API.
+     * @param query - the query String to send to the webserver
+     * @return JsonArray - a JsonArray containing the question data
+     */
     public static JsonArray parse(String query) {
         //BEGIN STRING TO URL CONVERSION
         URL url = null;
@@ -45,8 +50,9 @@ public class QueryParser {
 
         //JSO will contain a "results" section, which can be gotten
         JsonArray results = JSO.get("results").getAsJsonArray();    //An array containing every question/answer dictionary/map
-                                                                    //If amount = X, you get a JsonArray of size X
-                                                                    //Appears to be an ArrayList underneath, so access with get() method
+                                                                    //If amount = X, you get a JsonArray of size Xx
+        //get(i) getJsonObj get("item")
+        //Appears to be an ArrayList underneath, so access with get() method
         return results;
     }
 

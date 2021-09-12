@@ -14,6 +14,11 @@ public class CommandLine {
     private final Map<Integer, String> categories;
     private final Map<Integer, String> difficulties;
 
+    /**
+     * CommandLine objects which creates a new CommandLine UI.
+     * Initializes a grouping of categories and difficulties.
+     * @param processor
+     */
     public CommandLine(Processor processor) {
         this.processor = processor;
         scan = new Scanner(System.in);
@@ -30,6 +35,9 @@ public class CommandLine {
         difficulties.put(4, "mixed");
     }
 
+    /**
+     * Begins a CLI for user input/game play.
+     */
     public void start() {
         System.out.println("Welcome to Trivia!");
         int questionCount = getResponseToQuestion("How many questions would you like?", 5, 50);
@@ -56,6 +64,13 @@ public class CommandLine {
         scan.close();
     }
 
+    /**
+     * Retrieve a response to each question from the user.
+     * @param question
+     * @param lowerBound
+     * @param upperBound
+     * @return
+     */
     private int getResponseToQuestion(String question, int lowerBound, int upperBound) {
         int response = 0;
         boolean answered = false;
