@@ -9,6 +9,14 @@ public class Question {
     private final int difficulty;
     private final int category;
 
+    public String getCorrectAnswer() {
+        return correctAnswer;
+    }
+
+    public List<String> getIncorrectAnswers() {
+        return incorrectAnswers;
+    }
+
     /**
      * Question object containing question data.
      * @param questionText - a String representing the question text

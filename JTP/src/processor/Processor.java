@@ -103,12 +103,11 @@ public class Processor {
      * @param urls - the query strings to be parsed into questions
      * @return
      */
-    public List<Question> buildQuestions(List<String> urls) {
-        List<Question> questions = new ArrayList<Question>();
+    public Queue<Question> buildQuestions(List<String> urls) {
+        Queue<Question> questions = new LinkedList<Question>();
 
         for (int i = 0; i < urls.size(); i++) {
             JsonArray queryResult = QueryParser.parse(urls.get(i)); //Returns a JsonArray containing every question from the query
-            System.out.println(queryResult);
             //If query result has multiple questions, loop over
             for (int j = 0; j < queryResult.size(); j++) {
                 String question = queryResult.get(j).getAsJsonObject().get("question").toString();
