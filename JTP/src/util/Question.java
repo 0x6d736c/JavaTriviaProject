@@ -1,10 +1,12 @@
 package util;
 
+import org.apache.commons.text.*;
+
 import java.util.List;
 
 public class Question {
-    private final String questionText;
-    private final String correctAnswer;
+    private String questionText;
+    private String correctAnswer;
     private final List<String> incorrectAnswers;
     private final int difficulty;
     private final int category;
@@ -32,6 +34,20 @@ public class Question {
         this.incorrectAnswers = incorrectAnswers;
         this.difficulty = difficulty;
         this.category = category;
+        escapeStrings();
+    }
+
+    /**
+     * Escapes the Strings from HTML4 and removes/sanitizes wonky data.
+     * e.g. &quot should become an actual quotation mark
+     */
+    private void escapeStrings() {
+        this.questionText = StringEscapeUtils.unescapeHtml4(this.questionText);
+        this.correctAnswer = StringEscapeUtils.unescapeHtml4(this.correctAnswer);
+        for (int i = 0; i < this.incorrectAnswers.size(); i++) {
+            //Modifies list in-place to escape any HTML4 holdover characters
+            this.incorrectAnswers.set(i, StringEscapeUtils.unescapeHtml4(this.incorrectAnswers.get(i)));
+        }
     }
 
     public String toString() {

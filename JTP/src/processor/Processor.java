@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import datamanagement.QueryParser;
 import util.Question;
 import util.UserGameChoices;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.*;
 
