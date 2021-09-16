@@ -35,6 +35,16 @@ public class Question {
         this.difficulty = difficulty;
         this.category = category;
         escapeStrings();
+        obscureCorrectAnswers();
+    }
+
+    /**
+     * Removes giveaway quotes from correct answers.
+     * The API provides answers with quotations surrounding them,
+     * this function removes them to obscure the correct answer from the user.
+     */
+    private void obscureCorrectAnswers() {
+        this.correctAnswer = this.correctAnswer.replaceAll("^\"|\"$", "");
     }
 
     /**
