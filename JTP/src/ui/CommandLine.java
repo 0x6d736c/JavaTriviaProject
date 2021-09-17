@@ -1,5 +1,6 @@
 package ui;
 
+import org.apache.commons.lang3.StringUtils;
 import processor.Processor;
 import util.Question;
 import util.UserGameChoices;
@@ -11,12 +12,12 @@ public class CommandLine {
     private final Scanner scan;
     private final Map<Integer, String> categories;
     private final Map<Integer, String> difficulties;
-    private Queue<Question> questionQueue = null;
+    private Queue<Question> questionQueue;
 
     /**
-     * CommandLine objects which creates a new CommandLine UI.
+     * CommandLine object constructor which creates a new CommandLine UI.
      * Initializes a grouping of categories and difficulties.
-     * @param processor
+     * @param processor A processor object from the processing tier
      */
     public CommandLine(Processor processor) {
         this.processor = processor;
@@ -39,7 +40,25 @@ public class CommandLine {
      */
     public void start() {
         System.out.println("Welcome to Trivia!");
-        int questionCount = getResponseToQuestion("How many questions would you like?", 5, 50);
+        boolean playing = true;
+        String playAgainQuestion = """
+                Would you like to play again? Enter the number corresponding to your choice.
+                 1 - Yes
+                 2 - No""";
+        while (playing) {
+            setUpGame();
+            playOneGame();
+            playing = getResponseToQuestion(playAgainQuestion, 1, 2, false) == 1;
+        }
+        System.out.println("\nSee you next time!");
+        scan.close();
+    }
+
+    /**
+     * Sets the question queue field to a new set of questions corresponding to the user's choices
+     */
+    private void setUpGame() {
+        int questionCount = getResponseToQuestion("How many questions would you like? (5-50)", 5, 50, false);
         String categoryQuestion = """
                 Which category would you like? Enter the number corresponding to your chosen category.
                  1 - General Knowledge
@@ -47,55 +66,48 @@ public class CommandLine {
                  3 - Science
                  4 - History and The World
                  5 - Random""";
-        int category = getResponseToQuestion(categoryQuestion, 1, 5);
+        int category = getResponseToQuestion(categoryQuestion, 1, 5, false);
         String difficultyQuestion = """
                 What level of difficulty would you like? Enter the number corresponding to your chosen category.
                  1 - Easy
                  2 - Medium
                  3 - Hard
                  4 - Mixed Difficulty""";
-        int difficulty = getResponseToQuestion(difficultyQuestion, 1, 4);
-        System.out.println("You will be asked " + questionCount + " " + difficulties.get(difficulty) + " difficulty " +
+        int difficulty = getResponseToQuestion(difficultyQuestion, 1, 4, false);
+        System.out.println("\nYou will be asked " + questionCount + " " + difficulties.get(difficulty) + " difficulty " +
                 categories.get(category) + " questions.");
-        System.out.println("Beginning game...\n");
+        System.out.println("Beginning game...");
         UserGameChoices choices = new UserGameChoices(questionCount, category, difficulty);
-        System.out.println("URLs to Parse: " + processor.makeQueryURLs(choices)); //TODO: remove after implementing
-        List<String> queries = processor.makeQueryURLs(choices);        //Process all queries to parseable URLs
-        questionQueue = processor.buildQuestions(queries);              //Process all queries and convert to Question type
-        questionAndAnswer();
-        scan.close();
+        List<String> queries = processor.makeQueryURLs(choices);        // Process all queries to parsable URLs
+        questionQueue = processor.buildQuestions(queries);              // Convert all queries to question objects
     }
 
     /**
-     * Prompt user with questions, retrieve their answers, until the game is exhausted.
+     * Prompt user with questions and retrieve their answers until all the questions have been exhausted.
      */
-    private void questionAndAnswer() {
+    private void playOneGame() {
         int correctAnswers = 0;
         int incorrectAnswers = 0;
 
-        //Remove questions from queue, prompt answer, repeat
-        while (questionQueue.size() > 0) {
-            Question currentQuestion = questionQueue.remove();
+        // Remove questions from queue, prompt answer, repeat
+        while (!questionQueue.isEmpty()) {
+            Question currentQuestion = questionQueue.poll();
 
-            //Jumble up response options
+            // Jumble up response options
             List<String> answers = currentQuestion.getIncorrectAnswers();
-            answers.add(currentQuestion.getCorrectAnswer());
-            System.out.println("Pre shuffle: " + answers);
+            String correctAnswer = currentQuestion.getCorrectAnswer();
+            answers.add(correctAnswer);
             Collections.shuffle(answers);
+            int correctAnswerIndex = answers.indexOf(correctAnswer);
+            int response = getResponseToTriviaQuestion(currentQuestion, answers);
 
-            //Maps ints to answers so we can track entries
-            Map<Integer, String> answerMap = new HashMap<Integer, String>();
-            for (int i = 1; i < answers.size() + 1; i++) {
-                answerMap.put(i, answers.get(i - 1));
-            }
-            System.out.println("Post shuffle: " + answerMap);
-
-            int response = getResponseToQuestion(currentQuestion, answerMap);
-
-            //Check if response is correct; increment corrects if so, incorrects otherwise
-            if (answerMap.get(response).equals(currentQuestion.getCorrectAnswer())) {
+            // Check if response is correct then increment correct or incorrect answers
+            if (response - 1 == correctAnswerIndex) {
+                System.out.println("Correct!");
                 correctAnswers++;
             } else {
+                System.out.print("Incorrect! ");
+                System.out.println("The correct answer was " + correctAnswer + ".");
                 incorrectAnswers++;
             }
         }
@@ -105,16 +117,18 @@ public class CommandLine {
 
     /**
      * Retrieve a response to each question from the user.
-     * @param question
-     * @param lowerBound
-     * @param upperBound
-     * @return
+     * @param question Question to ask
+     * @param lowerBound Lower bound on what the user can answer
+     * @param upperBound Lower bound on what the user can answer
+     * @return The user's choice
      */
-    private int getResponseToQuestion(String question, int lowerBound, int upperBound) {
+    private int getResponseToQuestion(String question, int lowerBound, int upperBound, boolean isTriviaQuestion) {
         int response = 0;
         boolean answered = false;
         while (!answered) {
-            System.out.println("\n" + question);
+            if (!isTriviaQuestion) {
+                System.out.println("\n" + question);
+            }
             System.out.print("> ");
             try {
                 response = scan.nextInt();
@@ -133,47 +147,25 @@ public class CommandLine {
     }
 
     /**
-     * TODO: Possibly refactor for cleanliness/fewer lines of code. Might violate DRY.
-     * @param question
-     * @return
+     * Asks the user a trivia question and gets their response
+     * @param question Question object to ask
+     * @return The user's response
      */
-    private int getResponseToQuestion(Question question, Map<Integer, String> answers) {
-        if (question == null) return -1;
-        int lowerBound = 1;
-        int upperBound = question.getIncorrectAnswers().size() + 1;
-        //Get Question text, set lowerbound to 1, and get the upperbound by number of incorrect answers + 1
-        int response = 0;
-        boolean answered = false;
-        while (!answered) {
-            System.out.println("\n" + question);
-            //Print out mapped questions
-            for (int i = 1; i < answers.size() + 1; i++) {
-                System.out.println((i) + ". " + answers.get(i));
-            }
-            System.out.print("> ");
-            try {
-                response = scan.nextInt();
-                while (response < lowerBound || response > upperBound) {
-                    System.out.println("Please enter a number from " + lowerBound + " to " + upperBound + ".");
-                    System.out.print("> ");
-                    response = scan.nextInt();
-                }
-                answered = true;
-            } catch (InputMismatchException e) {
-                System.out.println("Please only enter a number.");
-                scan.nextLine();
-            }
+    private int getResponseToTriviaQuestion(Question question, List<String> answers) {
+        System.out.println("\nCategory: " + question.getCategory() + "; Difficulty: " + StringUtils.capitalize(question.getDifficulty()));
+        System.out.println(question);
+        for (int i = 1; i <= 4; i++) {
+            System.out.println(i + ". " + answers.get(i - 1));
         }
-        return response;
+        return getResponseToQuestion(null, 1, 4, true);
     }
 
     /**
      * Displays statistics for the game round.
-     * @param correctAnswers
-     * @param incorrectAnswers
+     * @param correctAnswers Number of correct answers
+     * @param incorrectAnswers Number of incorrect answers
      */
     private void printStatistics(int correctAnswers, int incorrectAnswers) {
         System.out.println("You answered " + correctAnswers + " questions correctly and " + incorrectAnswers + " incorrectly.");
-
     }
 }

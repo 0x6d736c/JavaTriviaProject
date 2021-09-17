@@ -2,12 +2,12 @@ package processor;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 import datamanagement.QueryParser;
 import util.Question;
 import util.UserGameChoices;
-import org.apache.commons.text.StringEscapeUtils;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 public class Processor {
@@ -34,7 +34,7 @@ public class Processor {
         categoryIDs.put(3, new Integer[] {17, 18, 19, 27, 30});
 
         // History and the World (Mythology, Geography, History, Politics)
-        categoryIDs.put(4, new Integer[] {20, 22, 23, 24, 25});
+        categoryIDs.put(4, new Integer[] {20, 22, 23, 24});
     }
 
     /**
@@ -42,10 +42,10 @@ public class Processor {
      * determines the number of questions each subcategory is allocated.
      *
      * Fills array with int representing number of questions per subcategory
-     * If the number doesn't divide evenly, iterate over array {remainder} number of times
+     * If the number doesn't divide evenly, iterate over array the remainder number of times
      * and add +1 to each successive subcategory count.
      * @param questionCount - an integer representing the number of questions the user requests.
-     * @param subcategoryCount - an integer representing the number of subcategories the user requests.
+     * @param subcategoryCount - an integer representing the number of subcategories in the category that was requested.
      * @return questionsPerSubcategory - an integer array containing the number of questions per subcategory.
      */
     private static int[] calculateQuestionsPerSubcategory(int questionCount, int subcategoryCount) {
@@ -60,7 +60,7 @@ public class Processor {
     }
 
     /**
-     * Generates the necessary query strings to later be used to retrieve questions from API.
+     * Generates the necessary query URLs to be used to retrieve questions from the API.
      * @param choices - a UserGameChoices object containing the user's game settings.
      * @return urls - a List of type String returning the query URLs to be used for API calls.
      */
@@ -100,31 +100,34 @@ public class Processor {
 
     /**
      * Loops through the List of query strings and generates a question for each one, appending it to
-     * the master list of questions. Returns a List of Question types.
+     * the master list of questions. Returns a queue of Question types.
      * @param urls - the query strings to be parsed into questions
-     * @return
+     * @return A queue of Question objects to ask the user
      */
     public Queue<Question> buildQuestions(List<String> urls) {
-        Queue<Question> questions = new LinkedList<Question>();
+        List<Question> questions = new ArrayList<>();
 
-        for (int i = 0; i < urls.size(); i++) {
-            JsonArray queryResult = QueryParser.parse(urls.get(i)); //Returns a JsonArray containing every question from the query
-            //If query result has multiple questions, loop over
-            for (int j = 0; j < queryResult.size(); j++) {
-                String question = queryResult.get(j).getAsJsonObject().get("question").toString();
-                String correctAnswer = queryResult.get(j).getAsJsonObject().get("correct_answer").toString();
-                List<String> incorrectAnswers = new Gson().fromJson(queryResult.get(j).getAsJsonObject().get("incorrect_answers"), ArrayList.class);
-                //TODO: parse question difficulty and category from strings to ints
-                questions.add(new Question(
-                        question,
-                        correctAnswer,
-                        incorrectAnswers,
-                        0,
-                        0
-                ));
+        // Loop over every query URL
+        for (String url : urls) {
+            JsonArray queryResult = QueryParser.parse(url); // Returns a JsonArray containing every question from the query
+
+            // If query result has multiple questions, loop over and add all of them
+            if (queryResult != null) {
+                for (int i = 0; i < queryResult.size(); i++) {
+                    String question = queryResult.get(i).getAsJsonObject().get("question").getAsString();
+                    String correctAnswer = queryResult.get(i).getAsJsonObject().get("correct_answer").getAsString();
+                    Type listType = new TypeToken<List<String>>() {
+                    }.getType();
+                    List<String> incorrectAnswers = new Gson().fromJson(queryResult.get(i).getAsJsonObject().get("incorrect_answers"), listType);
+                    String difficulty = queryResult.get(i).getAsJsonObject().get("difficulty").getAsString();
+                    String category = queryResult.get(i).getAsJsonObject().get("category").getAsString();
+                    questions.add(new Question(question, correctAnswer, incorrectAnswers, difficulty, category));
+                }
             }
         }
 
-        return questions;
+        // Shuffle and return the questions as a Queue
+        Collections.shuffle(questions);
+        return new LinkedList<>(questions);
     }
 }
