@@ -31,8 +31,10 @@ public class QueryParser {
         //BEGIN CONNECTION REQUEST
         URLConnection request = null;
         try {
-            request = url.openConnection();             //Lobs HTTP GET request at OpenTBD API
-            request.connect();                          //Performs connection to API
+            if (url != null) {
+                request = url.openConnection();         //Lobs HTTP GET request at OpenTBD API
+                request.connect();
+            }                                           //Performs connection to API
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -40,21 +42,32 @@ public class QueryParser {
 
         //BEGIN RESPONSE TO JSON CONVERSION
         JsonObject JSO = null;
+        InputStreamReader reader = null;
         try {
-            InputStreamReader reader = new InputStreamReader((InputStream) request.getContent());   //Read Stream from web server
-            JSO = JsonParser.parseReader(reader).getAsJsonObject();                                 //Parse stream to Java JSON
-            reader.close();                                                                         //Close the stream
+            if (request != null) {
+                reader = new InputStreamReader((InputStream) request.getContent());   //Read Stream from web server
+                JSO = JsonParser.parseReader(reader).getAsJsonObject();                                 //Parse stream to Java JSON
+            }//Close the stream
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        //JSO will contain a "results" section, which can be gotten
-        JsonArray results = JSO.get("results").getAsJsonArray();    //An array containing every question/answer dictionary/map
-                                                                    //If amount = X, you get a JsonArray of size Xx
-        //get(i) getJsonObj get("item")
-        //Appears to be an ArrayList underneath, so access with get() method
-        return results;
+        // JSO will contain a "results" section, which can be gotten
+        // If amount = X, you get a JsonArray of size Xx
+        // get(i) getJsonObj get("item")
+        // Appears to be an ArrayList underneath, so access with get() method
+        if (JSO != null) {
+            return JSO.get("results").getAsJsonArray();
+        } else {
+            return null;
+        }
     }
-
-
 }

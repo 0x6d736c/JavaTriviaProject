@@ -2,14 +2,41 @@ package util;
 
 import org.apache.commons.text.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Question {
-    private String questionText;
-    private String correctAnswer;
+    private final String questionText;
+    private final String correctAnswer;
     private final List<String> incorrectAnswers;
-    private final int difficulty;
-    private final int category;
+    private final String difficulty;
+    private final String category;
+
+    /**
+     * Question object containing question data.
+     * Escapes HTML characters from each field to ensure proper printing
+     *
+     * @param questionText - a String representing the question text
+     * @param correctAnswer - a String representing the correct answer to the question
+     * @param incorrectAnswers - a String array of common incorrect answers
+     * @param difficulty - an int representing question difficulty
+     * @param category - an int representing the question category
+     */
+    public Question(String questionText, String correctAnswer, List<String> incorrectAnswers, String difficulty,
+                    String category) {
+        this.questionText = StringEscapeUtils.unescapeHtml4(questionText);
+        this.correctAnswer = StringEscapeUtils.unescapeHtml4(correctAnswer);
+        this.incorrectAnswers = new ArrayList<>();
+        for (String incorrectAnswer : incorrectAnswers) {
+            this.incorrectAnswers.add(StringEscapeUtils.unescapeHtml4(incorrectAnswer));
+        }
+        this.difficulty = StringEscapeUtils.unescapeHtml4(difficulty);
+        this.category = StringEscapeUtils.unescapeHtml4(category);
+    }
+
+    public String toString() {
+        return questionText;
+    }
 
     public String getCorrectAnswer() {
         return correctAnswer;
@@ -19,48 +46,11 @@ public class Question {
         return incorrectAnswers;
     }
 
-    /**
-     * Question object containing question data.
-     * @param questionText - a String representing the question text
-     * @param correctAnswer - a String representing the correct answer to the question
-     * @param incorrectAnswers - a String array of common incorrect answers
-     * @param difficulty - an int representing question difficulty
-     * @param category - an int representing the question category
-     */
-    public Question(String questionText, String correctAnswer, List<String> incorrectAnswers, int difficulty,
-                    int category) {
-        this.questionText = questionText;
-        this.correctAnswer = correctAnswer;
-        this.incorrectAnswers = incorrectAnswers;
-        this.difficulty = difficulty;
-        this.category = category;
-        escapeStrings();
-        obscureCorrectAnswers();
+    public String getDifficulty() {
+        return difficulty;
     }
 
-    /**
-     * Removes giveaway quotes from correct answers.
-     * The API provides answers with quotations surrounding them,
-     * this function removes them to obscure the correct answer from the user.
-     */
-    private void obscureCorrectAnswers() {
-        this.correctAnswer = this.correctAnswer.replaceAll("^\"|\"$", "");
-    }
-
-    /**
-     * Escapes the Strings from HTML4 and removes/sanitizes wonky data.
-     * e.g. &quot should become an actual quotation mark
-     */
-    private void escapeStrings() {
-        this.questionText = StringEscapeUtils.unescapeHtml4(this.questionText);
-        this.correctAnswer = StringEscapeUtils.unescapeHtml4(this.correctAnswer);
-        for (int i = 0; i < this.incorrectAnswers.size(); i++) {
-            //Modifies list in-place to escape any HTML4 holdover characters
-            this.incorrectAnswers.set(i, StringEscapeUtils.unescapeHtml4(this.incorrectAnswers.get(i)));
-        }
-    }
-
-    public String toString() {
-        return questionText;
+    public String getCategory() {
+        return category;
     }
 }
