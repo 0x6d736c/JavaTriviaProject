@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="JavaTriviaProject:jar">
+    <output-path>$PROJECT_DIR$/target/JAR</output-path>
+    <root id="archive" name="JavaTriviaProject.jar">
+      <element id="module-output" name="JavaTriviaProject" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/commons/commons-text/1.9/commons-text-1.9.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/code/gson/gson/2.8.8/gson-2.8.8.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
